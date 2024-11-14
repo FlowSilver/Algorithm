@@ -1,5 +1,5 @@
 """
-Standard bubble sort using list
+Standard bubble sort using list (stable)
 
 """
 

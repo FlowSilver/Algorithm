@@ -82,3 +82,8 @@ class ArrayList(List[T]):
     def remove(self, item: T) -> None:
         index = self.index(item)
         self.delete_at_index(index)
+
+a = ArrayList(3)
+a.append(2)
+a.append('a')
+print(a)

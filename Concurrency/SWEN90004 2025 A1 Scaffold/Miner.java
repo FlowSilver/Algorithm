@@ -13,6 +13,13 @@ public class Miner extends Thread{
 
     @Override
     public void run() {
-        super.run();
+        while(true) {
+            try {
+                sleep(Params.MINING_TIME);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            station.depositGem();
+        }
     }
 }

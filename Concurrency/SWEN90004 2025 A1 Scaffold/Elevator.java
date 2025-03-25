@@ -15,13 +15,14 @@ public class Elevator extends Thread implements IStayable {
 
     private static int bufferSize = 20;
 
-    Cart carrriedCart = null;
+    private Cart carrriedCart = null;
 
-    boolean atBottom = false;
+    private boolean atBottom = false;
 
     public Elevator() {
     }
 
+    public boolean getStatus() { return atBottom; }
 
     public synchronized Cart depart() {
         while (bufferOfDepartedCart.size() == 0) {
@@ -48,7 +49,7 @@ public class Elevator extends Thread implements IStayable {
         notify();
     }
 
-    private void descend() {
+    public void descend() {
         // Descend
         try {
             sleep(Params.ELEVATOR_TIME);
@@ -60,7 +61,7 @@ public class Elevator extends Thread implements IStayable {
         atBottom = true;
     }
 
-    private void ascend() {
+    public void ascend() {
         // Ascend
         try {
             sleep(Params.ELEVATOR_TIME);
@@ -73,7 +74,7 @@ public class Elevator extends Thread implements IStayable {
     }
 
     @Override
-    public Cart getCart() {
+    public synchronized Cart getCart() {
         while (!atBottom || carrriedCart == null) {
             try {
                 wait();
@@ -89,7 +90,7 @@ public class Elevator extends Thread implements IStayable {
     }
 
     @Override
-    public void cartArrived(Cart arrivedCart) {
+    public synchronized void cartArrived(Cart arrivedCart) {
         while (!atBottom || carrriedCart != null) {
             try {
                 wait();
@@ -106,19 +107,28 @@ public class Elevator extends Thread implements IStayable {
         while (true) {
             // At bottom
             if (atBottom) {
+                // notify all IStayable instances
                 notifyAll();
-
-                // The elevator waits while it's empty
-                if (bufferOfArrivedCart.size() == 0) {
-                    try {
-                        sleep(Params.operatorPause());
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
 
-                // Ascend
-                ascend();
+                if (carrriedCart == null) {
+
+                    // notify all IStayable instances
+                    notifyAll();
+                    try {
+                        wait();
+                    }
+                    catch (InterruptedException e) {}
+                }
+
+                if (atBottom && carrriedCart != null) {
+                    // Ascend
+                    ascend();
+                }
             }
 
             // At top
@@ -132,18 +142,17 @@ public class Elevator extends Thread implements IStayable {
                 // The elevator waits while it's empty
                 if (bufferOfArrivedCart.size() == 0) {
                     try {
-                        sleep(Params.operatorPause());
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        wait();
                     }
+                    catch (InterruptedException e) {}
                 }
 
-                // Get cart from waiting queue
-                if (bufferOfArrivedCart.size() != 0)
-                carrriedCart = bufferOfArrivedCart.remove(0);
-
-                // Descend
-                descend();
+                // Get cart from waiting queue when at top
+                if (!atBottom && bufferOfArrivedCart.size() != 0) {
+                    carrriedCart = bufferOfArrivedCart.remove(0);
+                    // Descend
+                    descend();
+                }
             }
         }
     }

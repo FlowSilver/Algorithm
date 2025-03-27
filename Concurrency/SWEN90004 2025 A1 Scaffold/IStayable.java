@@ -1,5 +1,11 @@
 public interface IStayable {
-    Cart getCart();
+    Cart loadCart();
 
-    void cartArrived(Cart arrivedCart);
+    void deliverCart(Cart arrivedCart);
+
+    void iWait();
+
+    void iNotify();
+
+    void iNotifyAll();
 }

@@ -8,14 +8,14 @@ import java.util.List;
  * @author zuoweit@student.unimelb.edu.au
  * @date 20 March 2025
  */
-public class Elevator extends Thread implements IStayable {
+public class Elevator implements IStayable {
 
     protected List<Cart> bufferOfArrivedCart = new ArrayList<Cart>();
     protected List<Cart> bufferOfDepartedCart = new ArrayList<Cart>();
 
     private static int bufferSize = 20;
 
-    private Cart carrriedCart = null;
+    private Cart carriedCart = null;
 
     private boolean atBottom = false;
 
@@ -23,6 +23,45 @@ public class Elevator extends Thread implements IStayable {
     }
 
     public boolean getStatus() { return atBottom; }
+
+    public Cart getCarriedCart() {
+        return carriedCart;
+    }
+
+    public void setCarriedCart(Cart carriedCart) {
+        this.carriedCart = carriedCart;
+    }
+
+    public void setAtBottom(boolean atBottom) {
+        this.atBottom = atBottom;
+    }
+
+    public List<Cart> getBufferOfArrivedCart() {
+        return bufferOfArrivedCart;
+    }
+
+    public List<Cart> getBufferOfDepartedCart() {
+        return bufferOfDepartedCart;
+    }
+
+    @Override
+    public synchronized void iWait() {
+        try {
+            wait();
+        }
+        catch (InterruptedException e) {}
+    }
+
+    @Override
+    public synchronized void iNotify() {
+        notify();
+    }
+
+    @Override
+    public synchronized void iNotifyAll() {
+        notifyAll();
+    }
+
 
     public synchronized Cart depart() {
         while (bufferOfDepartedCart.size() == 0) {
@@ -49,111 +88,94 @@ public class Elevator extends Thread implements IStayable {
         notify();
     }
 
-    public void descend() {
-        // Descend
-        try {
-            sleep(Params.ELEVATOR_TIME);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Arrive at bottom
-        atBottom = true;
-    }
-
-    public void ascend() {
-        // Ascend
-        try {
-            sleep(Params.ELEVATOR_TIME);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        // Arrive at top
-        atBottom = false;
-    }
-
     @Override
-    public synchronized Cart getCart() {
-        while (!atBottom || carrriedCart == null) {
+    public synchronized Cart loadCart() {
+        while (!atBottom || carriedCart == null) {
             try {
                 wait();
             }
             catch (InterruptedException e) {}
         }
 
-        Cart cart = carrriedCart;
-        carrriedCart = null;
+        Cart cart = carriedCart;
+        carriedCart = null;
         notifyAll();
 
         return cart;
     }
 
     @Override
-    public synchronized void cartArrived(Cart arrivedCart) {
-        while (!atBottom || carrriedCart != null) {
+    public synchronized void deliverCart(Cart arrivedCart) {
+        while (!atBottom || carriedCart != null) {
             try {
                 wait();
             }
             catch (InterruptedException e) {}
         }
 
-        carrriedCart = arrivedCart;
+        carriedCart = arrivedCart;
         notifyAll();
     }
 
+//    @Override
+//    public void run() {
+//        while (true) {
+//            // At bottom
+//            if (atBottom) {
+//                // notify all IStayable instances
+//                notifyAll();
+//                try {
+//                    wait();
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+//
+//                if (carriedCart == null) {
+//
+//                    // notify all IStayable instances
+//                    notifyAll();
+//                    try {
+//                        wait();
+//                    }
+//                    catch (InterruptedException e) {}
+//                }
+//
+//                if (atBottom && carriedCart != null) {
+//                    // Ascend
+//                    ascend();
+//                }
+//            }
+//
+//            // At top
+//            else {
+//                // Add cart to Departure Cart Buffer
+//                if (carriedCart != null) {
+//                    bufferOfDepartedCart.add(carriedCart);
+//                    carriedCart = null;
+//                }
+//
+//                // The elevator waits while it's empty
+//                if (bufferOfArrivedCart.size() == 0) {
+//                    try {
+//                        wait();
+//                    }
+//                    catch (InterruptedException e) {}
+//                }
+//
+//                // Get cart from waiting queue when at top
+//                if (!atBottom && bufferOfArrivedCart.size() != 0) {
+//                    carriedCart = bufferOfArrivedCart.get(0);
+//                    bufferOfArrivedCart.remove(0);
+//
+//                    // Descend
+//                    descend();
+//                }
+//            }
+//        }
+//    }
+
     @Override
-    public void run() {
-        while (true) {
-            // At bottom
-            if (atBottom) {
-                // notify all IStayable instances
-                notifyAll();
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-
-                if (carrriedCart == null) {
-
-                    // notify all IStayable instances
-                    notifyAll();
-                    try {
-                        wait();
-                    }
-                    catch (InterruptedException e) {}
-                }
-
-                if (atBottom && carrriedCart != null) {
-                    // Ascend
-                    ascend();
-                }
-            }
-
-            // At top
-            else {
-                // Add cart to Departure Cart Buffer
-                if (carrriedCart != null) {
-                    bufferOfDepartedCart.add(carrriedCart);
-                    carrriedCart = null;
-                }
-
-                // The elevator waits while it's empty
-                if (bufferOfArrivedCart.size() == 0) {
-                    try {
-                        wait();
-                    }
-                    catch (InterruptedException e) {}
-                }
-
-                // Get cart from waiting queue when at top
-                if (!atBottom && bufferOfArrivedCart.size() != 0) {
-                    carrriedCart = bufferOfArrivedCart.remove(0);
-                    // Descend
-                    descend();
-                }
-            }
-        }
+    public String toString() {
+        return "elevator";
     }
 }

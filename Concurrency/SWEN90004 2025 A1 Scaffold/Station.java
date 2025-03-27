@@ -32,16 +32,7 @@ public class Station implements IStayable {
         notifyAll();
     }
 
-    @Override
-    public synchronized Cart getCart() {
-        // wait for cart
-        while (cart == null) {
-            try {
-                wait();
-            }
-            catch (InterruptedException e) {}
-        }
-
+    private synchronized void loadGem() {
         // wait for gem
         while (!hasGem) {
             try {
@@ -54,6 +45,42 @@ public class Station implements IStayable {
         this.cart.gems++;
         hasGem = false;
 
+        // Print statement
+        System.out.println(this.cart + " loaded with a gem");
+    }
+
+    @Override
+    public synchronized void iWait() {
+        try {
+            wait();
+        }
+        catch (InterruptedException e) {}
+    }
+
+    @Override
+    public synchronized void iNotify() {
+        notify();
+    }
+
+    @Override
+    public synchronized void iNotifyAll() {
+        notifyAll();
+    }
+
+
+    @Override
+    public synchronized Cart loadCart() {
+        // wait for cart
+        while (cart == null) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
+
+        // load a gem
+        loadGem();
+
         // Cart moves
         Cart removedCart = this.cart;
         this.cart = null;
@@ -63,7 +90,7 @@ public class Station implements IStayable {
     }
 
     @Override
-    public synchronized void cartArrived(Cart arrivedCart) {
+    public synchronized void deliverCart(Cart arrivedCart) {
         // Wait for station to be empty
         while (cart != null) {
             try {
@@ -75,5 +102,10 @@ public class Station implements IStayable {
         // Cart arrives
         this.cart = arrivedCart;
         notifyAll();
+    }
+
+    @Override
+    public String toString() {
+        return "station " + id;
     }
 }

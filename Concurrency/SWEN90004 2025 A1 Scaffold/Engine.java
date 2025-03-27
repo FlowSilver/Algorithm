@@ -29,19 +29,19 @@ public class Engine extends Thread{
     public void run() {
         while(true) {
             if(atStart) {
-                carriedCart = startStation.getCart();
-            }
-            else {
-                carriedCart = endStation.getCart();
+                carriedCart = startStation.loadCart();
+
+                // Print statement
+                System.out.println(carriedCart + " collected from " + endStation);
             }
 
             travel();
 
-            if(atStart) {
-                startStation.cartArrived(carriedCart);
-            }
-            else {
-                endStation.cartArrived(carriedCart);
+            if(!atStart) {
+                endStation.deliverCart(carriedCart);
+
+                // Print statement
+                System.out.println(carriedCart + " delivered to " + endStation);
             }
             carriedCart = null;
         }

@@ -19,7 +19,7 @@ public interface IStayable {
      *
      * @return The cart that was loaded
      */
-    Cart loadCart();
+    Cart loadCart(IStayable station);
 
     /**
      * Delivers a cart to the implementing object.

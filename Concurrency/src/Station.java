@@ -117,7 +117,7 @@ public class Station implements IStayable {
      * @return The cart that was loaded
      */
     @Override
-    public synchronized Cart loadCart() {
+    public synchronized Cart loadCart(IStayable station) {
         // wait for cart
         while (cart == null) {
             try {
@@ -132,6 +132,10 @@ public class Station implements IStayable {
         // Cart moves
         Cart removedCart = this.cart;
         this.cart = null;
+
+        // Print statement
+        System.out.println(removedCart + " collected from " + station);
+
         notifyAll();
 
         return removedCart;
@@ -158,6 +162,9 @@ public class Station implements IStayable {
 
         // Cart arrives
         this.cart = arrivedCart;
+
+        // Print statement
+        System.out.println(arrivedCart + " delivered to " + this);
         notifyAll();
     }
 

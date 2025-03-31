@@ -167,7 +167,7 @@ public class Elevator implements IStayable {
      * @return The unloaded cart.
      */
     @Override
-    public synchronized Cart loadCart() {
+    public synchronized Cart loadCart(IStayable station) {
 
         // Engine only loads a cart when there is an empty cart at bottom
         while (!atBottom || carriedCart == null || carriedCart.gems > 0) {
@@ -179,6 +179,9 @@ public class Elevator implements IStayable {
 
         Cart cart = carriedCart;
         carriedCart = null;
+
+        // Print statement
+        System.out.println(cart + " collected from " + station);
         notifyAll();
 
         return cart;
@@ -201,6 +204,8 @@ public class Elevator implements IStayable {
         }
 
         carriedCart = arrivedCart;
+        // Print statement
+        System.out.println(arrivedCart + " delivered to " + this);
         notifyAll();
     }
 

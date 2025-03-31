@@ -70,19 +70,13 @@ public class Engine extends Thread{
     public void run() {
         while(true) {
             if(atStart) {
-                carriedCart = startStation.loadCart();
-
-                // Print statement
-                System.out.println(carriedCart + " collected from " + endStation);
+                carriedCart = startStation.loadCart(endStation);
             }
 
             travel();
 
             if(!atStart) {
                 endStation.deliverCart(carriedCart);
-
-                // Print statement
-                System.out.println(carriedCart + " delivered to " + endStation);
             }
             carriedCart = null;
         }
